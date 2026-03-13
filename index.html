@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bắt Táo Học Luật</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Roboto:wght@400;700;900&display=swap');
+
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(145deg, #2b5a2b, #1e4a1e);
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .leaf {
+            position: fixed;
+            top: -10%;
+            color: rgba(255,255,255,0.3);
+            font-size: 24px;
+            pointer-events: none;
+            z-index: 0;
+            animation: leafFall linear infinite;
+        }
+        @keyframes leafFall {
+            to { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        .game-font {
+            font-family: 'Bungee', cursive;
+            letter-spacing: 1px;
+        }
+
+        #main-menu {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 60px;
+            padding: 30px;
+            box-shadow: 0 30px 40px rgba(0,0,0,0.5), 0 0 0 8px #ffb347, 0 0 0 12px #ff8c42;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #game-screen {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100vh;
+            display: none;
+            background: #87CEEB;
+            background: linear-gradient(to bottom, #87CEEB, #98FB98);
+        }
+
+        #game-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .game-ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            text-shadow: 3px 3px 0 #000;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        .ui-box {
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            border-radius: 40px;
+            padding: 10px 25px;
+            border: 3px solid gold;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            pointer-events: auto;
+        }
+
+        .time-extend-btn {
+            background: #ffaa00;
+            border: none;
+            border-radius: 30px;
+            padding: 5px 20px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: black;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #b27200;
+            transition: 0.1s;
+            pointer-events: auto;
+        }
+        .time-extend-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        .time-extend-btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        #question-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff7e6;
+            border-radius: 60px;
+            border: 8px solid #ffaa33;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: center;
+            z-index: 30;
+            box-shadow: 0 20px 0 #b95b0d, 0 30px 30px black;
+            display: none;
+        }
+
+        #question-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #f0e9d8;
+            border: 3px solid #d4a76a;
+            border-radius: 40px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.1s;
+            text-align: left;
+        }
+        .option-btn.selected {
+            background: #cce5ff;
+            border-color: #0066cc;
+        }
+        .option-btn.correct {
+            background: #b7e1b7;
+            border-color: #008800;
+        }
+        .option-btn.wrong {
+            background: #f9b5b5;
+            border-color: #cc0000;
+        }
+
+        /* Đúng/Sai nhiều ý */
+        .option-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f0e9d8;
+            border-radius: 40px;
+            border: 3px solid #d4a76a;
+        }
+        .option-text {
+            flex: 1;
+            font-size: 1.3rem;
+            text-align: left;
+            padding-left: 15px;
+            font-weight: 500;
+        }
+        .tf-btn {
+            background: #e0d6c0;
+            border: 2px solid #b39264;
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            min-width: 80px;
+        }
+        .tf-btn.selected {
+            background: #cce5ff;
+            border-color: #0066cc;
+        }
+        .tf-btn.correct {
+            background: #b7e1b7;
+            border-color: #008800;
+        }
+        .tf-btn.wrong {
+            background: #f9b5b5;
+            border-color: #cc0000;
+        }
+        .tf-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .submit-btn {
+            background: #4CAF50;
+            color: white;
+            font-size: 2rem;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 40px;
+            margin-top: 20px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #fff7e6;
+            border-radius: 60px;
+            border: 8px solid #ffaa33;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f0e9d8;
+            margin: 5px 0;
+            border-radius: 30px;
+            font-size: 1.3rem;
+        }
+
+        .floating-point {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 black;
+            pointer-events: none;
+            z-index: 100;
+            animation: floatUp 0.8s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-100px); }
+        }
+
+        .shop-item {
+            background: #fea;
+            border-radius: 30px;
+            padding: 10px 20px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="leaf-container"></div>
+
+    <!-- Màn hình chính -->
+    <div id="main-menu">
+        <h1 class="game-font text-6xl text-center text-orange-600 drop-shadow-[0_4px_0_#b57c1c] mb-6">🍎 BẮT TÁO HỌC LUẬT 🍎</h1>
+        
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- Bên trái -->
+            <div class="flex-1 bg-white/50 rounded-3xl p-6">
+                <div class="mb-6">
+                    <label class="block text-2xl font-bold mb-2">Tên của bạn:</label>
+                    <input type="text" id="player-name" class="w-full text-2xl p-3 rounded-full border-4 border-orange-400" placeholder="Nhập tên" maxlength="20">
+                </div>
+                <div class="bg-orange-100 p-4 rounded-2xl">
+                    <h2 class="game-font text-2xl mb-2">📜 LUẬT CHƠI</h2>
+                    <ul class="list-disc list-inside text-lg">
+                        <li>Click vào táo để bắt. Mỗi 2 quả táo sẽ có 1 câu hỏi.</li>
+                        <li>Táo đỏ: +0 điểm, +1 xu.</li>
+                        <li>Táo vàng: +20 điểm, +2 xu, rơi siêu nhanh.</li>
+                        <li>Bom (💣): nếu bấm nhầm –20 điểm, –2 xu.</li>
+                        <li>Trả lời đúng: thưởng điểm theo loại 2 táo vừa bắt (2 vàng: 20, 2 đỏ: 10, 1 vàng+1 đỏ: 15) × combo, +1 xu.</li>
+                        <li>Trả lời sai: –10 điểm, –1 xu.</li>
+                        <li>Combo: đúng 3 lần liên tiếp → điểm x2 (chỉ cho câu đúng).</li>
+                        <li>Thời gian 5 phút. Kết thúc tự động lưu điểm.</li>
+                        <li>Dùng xu mua kỹ năng thêm thời gian trong shop.</li>
+                        <li>⚠️ Nếu rời khỏi game, mở app khác hoặc chụp màn hình, game sẽ kết thúc ngay lập tức.</li>
+                    </ul>
+                </div>
+                <button id="start-btn" class="game-font bg-green-500 hover:bg-green-400 text-white text-3xl px-12 py-4 rounded-full mt-6 w-full shadow-[0_8px_0_#1b5e20] active:translate-y-1">🚀 BẮT ĐẦU</button>
+            </div>
+
+            <!-- Bên phải: Bảng xếp hạng + Shop -->
+            <div class="flex-1 bg-white/50 rounded-3xl p-6">
+                <h2 class="game-font text-3xl text-center mb-4">🏆 BẢNG XẾP HẠNG</h2>
+                <div id="leaderboard-list" class="space-y-2 max-h-[200px] overflow-y-auto mb-6"></div>
+
+                <h2 class="game-font text-2xl text-center mb-2">🛒 CỬA HÀNG</h2>
+                <div class="shop-item">
+                    <span>➕ Thêm 1 phút (dùng trong game)</span>
+                    <button id="buy-time" class="bg-blue-500 text-white px-4 py-2 rounded-full">15 🪙</button>
+                </div>
+                <div id="coin-display" class="text-right text-2xl mt-4">🪙 Xu: <span id="coin-amount">0</span></div>
+                <div id="token-display" class="text-right text-xl mt-2">⏱️ Token +1 phút: <span id="time-tokens">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Màn hình game -->
+    <div id="game-screen">
+        <canvas id="game-canvas"></canvas>
+        <div class="game-ui">
+            <div class="ui-box">
+                <span>🍎</span>
+                <span id="apple-count">0</span>
+                <span>🔥</span>
+                <span id="combo-count">0</span>
+            </div>
+            <div class="ui-box">
+                <span>⏱️</span>
+                <span id="timer-display">5:00</span>
+                <button id="use-time-token" class="time-extend-btn">⏱️+1 <span id="token-count">0</span></button>
+            </div>
+            <div class="ui-box">
+                <span>🏆</span>
+                <span id="score-display">0</span>
+                <span>🪙</span>
+                <span id="coin-game">0</span>
+            </div>
+        </div>
+        <!-- Overlay câu hỏi -->
+        <div id="question-overlay">
+            <div id="question-type" class="text-sm text-orange-500 mb-2"></div>
+            <div id="question-text"></div>
+            <div id="options-container"></div>
+            <div id="feedback" class="text-2xl mt-4 hidden"></div>
+            <button id="submit-multi" class="submit-btn" style="display: none;">Xác nhận</button>
+        </div>
+    </div>
+
+    <!-- Modal kết thúc -->
+    <div id="end-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="game-font text-5xl text-red-600 mb-4">⏰ HẾT GIỜ!</h2>
+            <p class="text-2xl">Điểm của bạn: <span id="final-score"></span></p>
+            <p class="text-xl">Xu kiếm được: <span id="final-coins"></span></p>
+            <p class="text-xl mb-4">Thời gian: <span id="final-time"></span></p>
+            <button onclick="location.reload()" class="game-font bg-blue-500 hover:bg-blue-400 text-white px-8 py-4 rounded-full text-2xl">VỀ MÀN HÌNH CHÍNH</button>
+        </div>
+    </div>
+
+    <!-- Modal gian lận -->
+    <div id="cheat-modal" class="modal">
+        <div class="modal-content border-red-600">
+            <h2 class="game-font text-5xl text-red-600 mb-4">🚫 PHÁT HIỆN GIAN LẬN!</h2>
+            <p class="text-xl mb-6">Bạn đã rời khỏi game hoặc chụp màn hình.</p>
+            <button onclick="location.reload()" class="game-font bg-red-500 hover:bg-red-400 text-white px-8 py-4 rounded-full text-2xl">VỀ MÀN HÌNH CHÍNH</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // Lá rơi trang trí
+            function createLeaves() {
+                const container = document.getElementById('leaf-container');
+                for (let i = 0; i < 6; i++) {
+                    const leaf = document.createElement('div');
+                    leaf.className = 'leaf';
+                    leaf.style.left = Math.random() * 100 + '%';
+                    leaf.style.animationDuration = (15 + Math.random() * 20) + 's';
+                    leaf.style.animationDelay = Math.random() * 5 + 's';
+                    leaf.innerHTML = ['🍂','🍃','🌿','🍀'][Math.floor(Math.random()*4)];
+                    leaf.style.fontSize = (20 + Math.floor(Math.random()*20)) + 'px';
+                    container.appendChild(leaf);
+                }
+            }
+            createLeaves();
+
+            // Âm thanh
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            function playSound(type) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                switch(type) {
+                    case 'catch':
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(600, now);
+                        osc.frequency.exponentialRampToValueAtTime(900, now + 0.1);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                        osc.start(now);
+                        osc.stop(now + 0.1);
+                        break;
+                    case 'correct':
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(523, now);
+                        osc.frequency.setValueAtTime(659, now + 0.15);
+                        osc.frequency.setValueAtTime(784, now + 0.3);
+                        gain.gain.setValueAtTime(0.3, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                        osc.start(now);
+                        osc.stop(now + 0.5);
+                        break;
+                    case 'wrong':
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(200, now);
+                        osc.frequency.linearRampToValueAtTime(80, now + 0.3);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                        break;
+                    case 'bomb':
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(100, now);
+                        osc.frequency.linearRampToValueAtTime(50, now + 0.3);
+                        gain.gain.setValueAtTime(0.3, now);
+                        gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                        break;
+                }
+            }
+
+            // Ngân hàng câu hỏi
+            const questionBank = [
+                { type: 'mc', q: 'Hiến pháp nước ta hiện nay là năm nào?', a: '2013', options: ['1992', '2013', '1945', '2001'] },
+                { type: 'mc', q: 'Quốc hội là cơ quan gì?', a: 'Lập pháp', options: ['Hành pháp', 'Tư pháp', 'Lập pháp', 'Giám sát'] },
+                { type: 'multi-tf', q: 'Đoạn tư liệu phản ánh thành tựu về kĩ thuật xây dựng của cư dân Đại Việt?', 
+                  options: [
+                      { text: 'A. Kỹ thuật xây dựng thời Lý đạt đỉnh cao.', correct: true },
+                      { text: 'B. Gốm sứ thời Trần rất phát triển.', correct: false },
+                      { text: 'C. Nghệ thuật điêu khắc đá tinh xảo.', correct: true },
+                      { text: 'D. Các công trình chủ yếu bằng gỗ.', correct: false }
+                  ] },
+                { type: 'multi-tf', q: 'Chọn các câu đúng về quyền công dân:', 
+                  options: [
+                      { text: 'A. Công dân có quyền tự do ngôn luận tuyệt đối.', correct: false },
+                      { text: 'B. Công dân có quyền bầu cử khi đủ 18 tuổi.', correct: true },
+                      { text: 'C. Trẻ em có quyền được bảo vệ.', correct: true },
+                      { text: 'D. Mọi người đều có quyền kinh doanh mọi mặt hàng.', correct: false }
+                  ] },
+                { type: 'multi-tf', q: 'Chọn các câu đúng về bộ máy nhà nước:',
+                  options: [
+                      { text: 'A. Quốc hội là cơ quan lập pháp.', correct: true },
+                      { text: 'B. Chủ tịch nước do nhân dân bầu.', correct: false },
+                      { text: 'C. Tòa án nhân dân tối cao là cơ quan tư pháp.', correct: true },
+                      { text: 'D. Chính phủ là cơ quan hành pháp.', correct: true }
+                  ] },
+                { type: 'tf', q: 'Công dân có quyền tự do ngôn luận tuyệt đối.', a: 'Sai', options: ['Đúng', 'Sai'] },
+                { type: 'mc', q: 'Chủ tịch nước do ai bầu?', a: 'Quốc hội', options: ['Nhân dân', 'Quốc hội', 'Chính phủ', 'Đảng'] },
+                { type: 'tf', q: 'Trẻ em có quyền được bảo vệ.', a: 'Đúng', options: ['Đúng', 'Sai'] },
+                { type: 'mc', q: 'Bộ luật dân sự mới nhất năm?', a: '2015', options: ['2015', '2005', '2020', '2010'] },
+                { type: 'multi-tf', q: 'Chọn các câu đúng về luật giao thông:',
+                  options: [
+                      { text: 'A. Người đi xe máy phải đội mũ bảo hiểm.', correct: true },
+                      { text: 'B. Trẻ em dưới 7 tuổi được ngồi xe máy không cần mũ.', correct: false },
+                      { text: 'C. Uống rượu bia khi lái xe bị cấm.', correct: true },
+                      { text: 'D. Xe đạp không được đi vào đường cao tốc.', correct: true }
+                  ] }
+            ];
+
+            // Quản lý lặp lại câu hỏi: mỗi câu tối đa 2 lần, không lặp lại trong 4 câu gần nhất
+            let questionUsage = new Array(questionBank.length).fill(0);
+            let recentQuestions = []; // lưu 4 index gần nhất
+
+            function getRandomQuestion() {
+                // Tìm các câu chưa dùng quá 2 lần và không nằm trong recent
+                let available = [];
+                for (let i = 0; i < questionBank.length; i++) {
+                    if (questionUsage[i] < 2 && !recentQuestions.includes(i)) {
+                        available.push(i);
+                    }
+                }
+                // Nếu không có câu nào khả dụng, reset recent (vẫn giữ usage) hoặc reset usage nếu cần
+                if (available.length === 0) {
+                    // Thử bỏ qua recent, chỉ lấy câu chưa đạt 2 lần
+                    for (let i = 0; i < questionBank.length; i++) {
+                        if (questionUsage[i] < 2) available.push(i);
+                    }
+                }
+                // Nếu vẫn không có, reset toàn bộ usage (bắt đầu lại vòng mới)
+                if (available.length === 0) {
+                    questionUsage.fill(0);
+                    recentQuestions = [];
+                    available = questionBank.map((_, i) => i);
+                }
+                const randIdx = available[Math.floor(Math.random() * available.length)];
+                questionUsage[randIdx]++;
+                recentQuestions.push(randIdx);
+                if (recentQuestions.length > 4) recentQuestions.shift(); // giữ 4 câu gần nhất
+                return questionBank[randIdx];
+            }
+
+            // Dữ liệu người chơi
+            let playerName = localStorage.getItem('playerName') || '';
+            let totalCoins = parseInt(localStorage.getItem('totalCoins') || '0');
+            let timeTokens = parseInt(localStorage.getItem('timeTokens') || '0');
+
+            const nameInput = document.getElementById('player-name');
+            nameInput.value = playerName;
+
+            function saveName() {
+                playerName = nameInput.value.trim();
+                if (playerName) localStorage.setItem('playerName', playerName);
+            }
+
+            function lockName() {
+                nameInput.disabled = true;
+            }
+
+            function updateCoinDisplay() {
+                document.getElementById('coin-amount').textContent = totalCoins;
+                document.getElementById('time-tokens').textContent = timeTokens;
+            }
+            updateCoinDisplay();
+
+            // Bảng xếp hạng
+            let leaderboard = JSON.parse(localStorage.getItem('appleLeaderboard')) || [];
+            function updateLeaderboardDisplay() {
+                const list = document.getElementById('leaderboard-list');
+                list.innerHTML = '';
+                leaderboard.sort((a, b) => {
+                    if (a.score !== b.score) return b.score - a.score;
+                    else return a.time - b.time;
+                });
+                leaderboard.slice(0, 10).forEach((entry, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'leaderboard-item';
+                    div.innerHTML = `<span>${index+1}. ${entry.name}</span><span>${entry.score} đ (${Math.floor(entry.time/60)}:${(entry.time%60).toString().padStart(2,'0')}) 🪙${entry.coins}</span>`;
+                    list.appendChild(div);
+                });
+            }
+            updateLeaderboardDisplay();
+
+            // Shop
+            document.getElementById('buy-time').addEventListener('click', () => {
+                if (totalCoins >= 15) {
+                    totalCoins -= 15;
+                    timeTokens++;
+                    localStorage.setItem('totalCoins', totalCoins);
+                    localStorage.setItem('timeTokens', timeTokens);
+                    updateCoinDisplay();
+                    alert('Bạn đã mua 1 token +1 phút! Dùng trong game bằng nút ⏱️+1.');
+                } else {
+                    alert('Không đủ xu!');
+                }
+            });
+
+            // Game state
+            let canvas, ctx;
+            let gameActive = false;
+            let cheatDetected = false; // cờ gian lận
+            let timeLeft = 300; // 5 phút
+            let timerInterval = null;
+            let apples = [];
+            let appleCount = 0;
+            let combo = 0;
+            let score = 0;
+            let multiplier = 1;
+            let questionActive = false;
+            let currentQuestion = null;
+            let currentQuestionTypes = [];
+            let lastTwoApples = [];
+            let animationFrame = null;
+            let gameCoins = 0;
+
+            const BASE_SPEED = 4.0;
+            let speedMultiplier = 1;
+
+            // DOM
+            const mainMenu = document.getElementById('main-menu');
+            const gameScreen = document.getElementById('game-screen');
+            const startBtn = document.getElementById('start-btn');
+            const canvasEl = document.getElementById('game-canvas');
+            const appleSpan = document.getElementById('apple-count');
+            const comboSpan = document.getElementById('combo-count');
+            const timerSpan = document.getElementById('timer-display');
+            const scoreSpan = document.getElementById('score-display');
+            const coinGameSpan = document.getElementById('coin-game');
+            const tokenCountSpan = document.getElementById('token-count');
+            const useTokenBtn = document.getElementById('use-time-token');
+            const questionOverlay = document.getElementById('question-overlay');
+            const questionText = document.getElementById('question-text');
+            const optionsContainer = document.getElementById('options-container');
+            const feedbackDiv = document.getElementById('feedback');
+            const submitMultiBtn = document.getElementById('submit-multi');
+            const endModal = document.getElementById('end-modal');
+            const cheatModal = document.getElementById('cheat-modal');
+            const finalScoreSpan = document.getElementById('final-score');
+            const finalCoinsSpan = document.getElementById('final-coins');
+            const finalTimeSpan = document.getElementById('final-time');
+
+            function updateTokenButton() {
+                tokenCountSpan.textContent = timeTokens;
+                if (timeTokens <= 0) {
+                    useTokenBtn.classList.add('disabled');
+                } else {
+                    useTokenBtn.classList.remove('disabled');
+                }
+            }
+            updateTokenButton();
+
+            useTokenBtn.addEventListener('click', () => {
+                if (!gameActive || cheatDetected || timeTokens <= 0) return;
+                timeTokens--;
+                localStorage.setItem('timeTokens', timeTokens);
+                timeLeft += 60;
+                updateTokenButton();
+                showFloatingPoint(window.innerWidth/2, 100, '+1 phút', 'cyan');
+            });
+
+            // Anti-cheat
+            function handleCheat() {
+                if (!gameActive || cheatDetected) return;
+                cheatDetected = true;
+                gameActive = false;
+                clearInterval(timerInterval);
+                cancelAnimationFrame(animationFrame);
+                cheatModal.classList.add('active');
+            }
+
+            window.addEventListener('blur', () => {
+                // Có thể là chuyển tab, mở app khác, chụp màn hình (trên mobile)
+                handleCheat();
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) handleCheat();
+            });
+
+            // Ngăn chặn context menu (chuột phải) và phím tắt chụp màn hình (cơ bản)
+            window.addEventListener('contextmenu', e => e.preventDefault());
+            window.addEventListener('keydown', e => {
+                if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p')) {
+                    handleCheat();
+                }
+            });
+
+            startBtn.addEventListener('click', () => {
+                saveName();
+                if (!playerName) {
+                    alert('Vui lòng nhập tên!');
+                    return;
+                }
+                lockName();
+                mainMenu.style.display = 'none';
+                gameScreen.style.display = 'block';
+                initGame();
+            });
+
+            function initGame() {
+                canvas = canvasEl;
+                ctx = canvas.getContext('2d');
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+
+                gameActive = true;
+                cheatDetected = false;
+                timeLeft = 300;
+                apples = [];
+                appleCount = 0;
+                combo = 0;
+                score = 0;
+                multiplier = 1;
+                gameCoins = 0;
+                questionActive = false;
+                questionOverlay.style.display = 'none';
+                speedMultiplier = 1;
+                lastTwoApples = [];
+                updateUI();
+                updateTokenButton();
+
+                startTimer();
+                animationFrame = requestAnimationFrame(gameLoop);
+            }
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            function spawnApple() {
+                if (!gameActive) return;
+                const x = Math.random() * canvas.width;
+                const y = -50;
+                const r = Math.random();
+                let type = 'normal';
+                let golden = false;
+                let bomb = false;
+                if (r < 0.1) {
+                    bomb = true;
+                } else if (r < 0.3) {
+                    golden = true;
+                }
+
+                let speed;
+                if (bomb) {
+                    speed = (BASE_SPEED + Math.random() * 1.5) * speedMultiplier;
+                } else if (golden) {
+                    speed = (BASE_SPEED * 2 + Math.random() * 2) * speedMultiplier;
+                } else {
+                    speed = (BASE_SPEED + Math.random() * 1.5) * speedMultiplier;
+                }
+
+                apples.push({ x, y, speed, golden, bomb, radius: 35 });
+            }
+
+            function drawApples() {
+                apples.forEach(apple => {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(apple.x, apple.y, apple.radius, 0, Math.PI*2);
+                    let gradient;
+                    if (apple.bomb) {
+                        gradient = ctx.createRadialGradient(apple.x-5, apple.y-5, 5, apple.x, apple.y, apple.radius);
+                        gradient.addColorStop(0, '#333');
+                        gradient.addColorStop(1, '#111');
+                    } else if (apple.golden) {
+                        gradient = ctx.createRadialGradient(apple.x-5, apple.y-5, 5, apple.x, apple.y, apple.radius);
+                        gradient.addColorStop(0, '#ffd700');
+                        gradient.addColorStop(1, '#b8860b');
+                    } else {
+                        gradient = ctx.createRadialGradient(apple.x-5, apple.y-5, 5, apple.x, apple.y, apple.radius);
+                        gradient.addColorStop(0, '#ff4d4d');
+                        gradient.addColorStop(1, '#8b0000');
+                    }
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    ctx.strokeStyle = '#5d3a1a';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(apple.x-5, apple.y-apple.radius);
+                    ctx.lineTo(apple.x-10, apple.y-apple.radius-15);
+                    ctx.lineTo(apple.x+5, apple.y-apple.radius-10);
+                    ctx.fillStyle = '#5d3a1a';
+                    ctx.fill();
+
+                    ctx.font = 'bold 20px "Bungee", cursive';
+                    ctx.fillStyle = 'white';
+                    ctx.shadowColor = 'black';
+                    ctx.shadowBlur = 6;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    if (apple.bomb) {
+                        ctx.fillText('BOM', apple.x, apple.y);
+                    } else {
+                        ctx.fillText('TÁO', apple.x, apple.y);
+                    }
+                    ctx.restore();
+                });
+            }
+
+            function updateApples() {
+                for (let i = apples.length-1; i >= 0; i--) {
+                    const apple = apples[i];
+                    apple.y += apple.speed;
+                    if (apple.y > canvas.height + 100) {
+                        apples.splice(i, 1);
+                    }
+                }
+                if (Math.random() < 0.025) spawnApple();
+            }
+
+            canvasEl.addEventListener('click', (e) => {
+                if (!gameActive || cheatDetected || questionActive) return;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mouseX = (e.clientX - rect.left) * scaleX;
+                const mouseY = (e.clientY - rect.top) * scaleY;
+
+                for (let i = apples.length-1; i >= 0; i--) {
+                    const apple = apples[i];
+                    const dx = mouseX - apple.x;
+                    const dy = mouseY - apple.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < apple.radius) {
+                        if (apple.bomb) {
+                            playSound('bomb');
+                            score -= 20;
+                            gameCoins = Math.max(0, gameCoins - 2);
+                            showFloatingPoint(apple.x, apple.y, '💥 -20 🪙-2', 'red');
+                        } else {
+                            playSound('catch');
+                            if (apple.golden) {
+                                score += 20;
+                                gameCoins += 2;
+                                showFloatingPoint(apple.x, apple.y, '+20 🪙+2', 'gold');
+                                lastTwoApples.push('gold');
+                            } else {
+                                gameCoins += 1;
+                                showFloatingPoint(apple.x, apple.y, '+1 🪙', 'white');
+                                lastTwoApples.push('red');
+                            }
+                            appleCount++;
+                            appleSpan.textContent = appleCount;
+                        }
+                        apples.splice(i, 1);
+
+                        if (appleCount >= 2 && !apple.bomb) {
+                            appleCount = 0;
+                            appleSpan.textContent = appleCount;
+                            const types = lastTwoApples.slice(-2);
+                            lastTwoApples = [];
+                            showQuestionWithTypes(types);
+                        }
+                        break;
+                    }
+                }
+                updateUI();
+            });
+
+            function showFloatingPoint(x, y, text, color) {
+                const div = document.createElement('div');
+                div.className = 'floating-point';
+                div.style.left = x + 'px';
+                div.style.top = y + 'px';
+                div.style.color = color;
+                div.textContent = text;
+                document.body.appendChild(div);
+                setTimeout(() => div.remove(), 800);
+            }
+
+            function showQuestionWithTypes(types) {
+                questionActive = true;
+                currentQuestion = getRandomQuestion();
+                currentQuestionTypes = types;
+                questionText.textContent = currentQuestion.q;
+                optionsContainer.innerHTML = '';
+                feedbackDiv.classList.add('hidden');
+                submitMultiBtn.style.display = 'none';
+                questionOverlay.style.display = 'block';
+
+                if (currentQuestion.type === 'multi-tf') {
+                    currentQuestion.options.forEach((opt, idx) => {
+                        const row = document.createElement('div');
+                        row.className = 'option-row';
+                        row.dataset.index = idx;
+
+                        const textSpan = document.createElement('span');
+                        textSpan.className = 'option-text';
+                        textSpan.textContent = opt.text;
+
+                        const trueBtn = document.createElement('button');
+                        trueBtn.className = 'tf-btn';
+                        trueBtn.textContent = 'Đúng';
+                        trueBtn.dataset.optionIdx = idx;
+                        trueBtn.dataset.choice = 'true';
+
+                        const falseBtn = document.createElement('button');
+                        falseBtn.className = 'tf-btn';
+                        falseBtn.textContent = 'Sai';
+                        falseBtn.dataset.optionIdx = idx;
+                        falseBtn.dataset.choice = 'false';
+
+                        const selectChoice = (btn) => {
+                            row.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('selected'));
+                            btn.classList.add('selected');
+                        };
+
+                        trueBtn.addEventListener('click', () => selectChoice(trueBtn));
+                        falseBtn.addEventListener('click', () => selectChoice(falseBtn));
+
+                        row.appendChild(textSpan);
+                        row.appendChild(trueBtn);
+                        row.appendChild(falseBtn);
+                        optionsContainer.appendChild(row);
+                    });
+
+                    submitMultiBtn.style.display = 'block';
+                    submitMultiBtn.onclick = checkMultiAnswer;
+                } else if (currentQuestion.type === 'tf') {
+                    currentQuestion.options.forEach((opt, idx) => {
+                        const btn = document.createElement('button');
+                        btn.className = 'option-btn';
+                        btn.textContent = (idx === 0 ? 'A. ' : 'B. ') + opt;
+                        btn.onclick = () => checkAnswer(opt);
+                        optionsContainer.appendChild(btn);
+                    });
+                } else {
+                    currentQuestion.options.forEach((opt, idx) => {
+                        const btn = document.createElement('button');
+                        btn.className = 'option-btn';
+                        btn.textContent = String.fromCharCode(65 + idx) + '. ' + opt;
+                        btn.onclick = () => checkAnswer(opt);
+                        optionsContainer.appendChild(btn);
+                    });
+                }
+            }
+
+            function getBasePoints() {
+                if (!currentQuestionTypes || currentQuestionTypes.length !== 2) return 10;
+                const goldCount = currentQuestionTypes.filter(t => t === 'gold').length;
+                if (goldCount === 2) return 20;
+                if (goldCount === 1) return 15;
+                return 10;
+            }
+
+            function checkAnswer(selected) {
+                if (!currentQuestion) return;
+                const correct = currentQuestion.a;
+                const isCorrect = (selected === correct);
+                playSound(isCorrect ? 'correct' : 'wrong');
+                feedbackDiv.classList.remove('hidden');
+
+                const btns = optionsContainer.querySelectorAll('.option-btn');
+                btns.forEach(btn => {
+                    btn.classList.remove('selected');
+                    if (btn.textContent.includes(correct)) {
+                        btn.classList.add('correct');
+                    } else if (btn.textContent.includes(selected) && !isCorrect) {
+                        btn.classList.add('wrong');
+                    }
+                });
+
+                if (isCorrect) {
+                    let base = getBasePoints();
+                    let points = base * multiplier;
+                    score += points;
+                    gameCoins += 1;
+                    combo++;
+                    if (combo >= 3) multiplier = 2;
+                    feedbackDiv.textContent = `✅ ĐÚNG! +${points} 🪙+1`;
+                    feedbackDiv.style.color = 'green';
+                    showFloatingPoint(window.innerWidth/2, window.innerHeight/2, `+${points} 🪙+1`, 'gold');
+                } else {
+                    score -= 10;
+                    gameCoins = Math.max(0, gameCoins - 1);
+                    combo = 0;
+                    multiplier = 1;
+                    feedbackDiv.textContent = `❌ SAI! -10 🪙-1`;
+                    feedbackDiv.style.color = 'red';
+                }
+
+                updateUI();
+
+                setTimeout(() => {
+                    questionOverlay.style.display = 'none';
+                    questionActive = false;
+                    currentQuestion = null;
+                    currentQuestionTypes = [];
+                }, 2000);
+            }
+
+            function checkMultiAnswer() {
+                if (!currentQuestion || currentQuestion.type !== 'multi-tf') return;
+
+                const rows = optionsContainer.querySelectorAll('.option-row');
+                let allCorrect = true;
+
+                rows.forEach((row, idx) => {
+                    const selectedBtn = row.querySelector('.tf-btn.selected');
+                    const option = currentQuestion.options[idx];
+                    const correct = option.correct;
+
+                    if (!selectedBtn) {
+                        allCorrect = false;
+                    } else {
+                        const userChoice = selectedBtn.dataset.choice === 'true';
+                        if (userChoice !== correct) allCorrect = false;
+                    }
+                });
+
+                // Tô màu các nút
+                rows.forEach((row, idx) => {
+                    const trueBtn = row.querySelector('.tf-btn[data-choice="true"]');
+                    const falseBtn = row.querySelector('.tf-btn[data-choice="false"]');
+                    const option = currentQuestion.options[idx];
+                    const correct = option.correct;
+
+                    trueBtn.disabled = true;
+                    falseBtn.disabled = true;
+
+                    if (correct) {
+                        trueBtn.classList.add('correct');
+                        falseBtn.classList.add('wrong');
+                    } else {
+                        trueBtn.classList.add('wrong');
+                        falseBtn.classList.add('correct');
+                    }
+
+                    const selectedBtn = row.querySelector('.tf-btn.selected');
+                    if (selectedBtn) {
+                        const userChoice = selectedBtn.dataset.choice === 'true';
+                        if (userChoice !== correct) {
+                            selectedBtn.classList.add('wrong');
+                        } else {
+                            selectedBtn.classList.add('correct');
+                        }
+                    }
+                });
+
+                playSound(allCorrect ? 'correct' : 'wrong');
+                feedbackDiv.classList.remove('hidden');
+
+                if (allCorrect) {
+                    let base = getBasePoints();
+                    let points = base * multiplier;
+                    score += points;
+                    gameCoins += 1;
+                    combo++;
+                    if (combo >= 3) multiplier = 2;
+                    feedbackDiv.textContent = `✅ ĐÚNG! +${points} 🪙+1`;
+                    feedbackDiv.style.color = 'green';
+                    showFloatingPoint(window.innerWidth/2, window.innerHeight/2, `+${points} 🪙+1`, 'gold');
+                } else {
+                    score -= 10;
+                    gameCoins = Math.max(0, gameCoins - 1);
+                    combo = 0;
+                    multiplier = 1;
+                    feedbackDiv.textContent = `❌ SAI! -10 🪙-1`;
+                    feedbackDiv.style.color = 'red';
+                }
+
+                updateUI();
+
+                setTimeout(() => {
+                    questionOverlay.style.display = 'none';
+                    questionActive = false;
+                    currentQuestion = null;
+                    currentQuestionTypes = [];
+                }, 2000);
+            }
+
+            function updateUI() {
+                appleSpan.textContent = appleCount;
+                comboSpan.textContent = combo;
+                scoreSpan.textContent = score;
+                coinGameSpan.textContent = gameCoins;
+            }
+
+            function startTimer() {
+                timerInterval = setInterval(() => {
+                    if (!gameActive || cheatDetected) return;
+                    timeLeft--;
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        gameActive = false;
+                        endGame();
+                    }
+                    const mins = Math.floor(timeLeft / 60);
+                    const secs = timeLeft % 60;
+                    timerSpan.textContent = `${mins}:${secs.toString().padStart(2,'0')}`;
+                }, 1000);
+            }
+
+            function endGame() {
+                gameActive = false;
+                cancelAnimationFrame(animationFrame);
+                totalCoins += gameCoins;
+                localStorage.setItem('totalCoins', totalCoins);
+
+                const timePlayed = 300 - timeLeft;
+                leaderboard.push({ name: playerName, score: score, time: timePlayed, coins: gameCoins });
+                if (leaderboard.length > 50) leaderboard = leaderboard.slice(0, 50);
+                localStorage.setItem('appleLeaderboard', JSON.stringify(leaderboard));
+                finalScoreSpan.textContent = score;
+                finalCoinsSpan.textContent = gameCoins;
+                finalTimeSpan.textContent = `${Math.floor(timePlayed/60)}:${(timePlayed%60).toString().padStart(2,'0')}`;
+                endModal.classList.add('active');
+            }
+
+            function gameLoop() {
+                if (!gameActive || cheatDetected) return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                updateApples();
+                drawApples();
+                animationFrame = requestAnimationFrame(gameLoop);
+            }
+        })();
+    </script>
+</body>
+</html>
