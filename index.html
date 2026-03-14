@@ -515,14 +515,13 @@
                         available.push(i);
                     }
                 }
-                // Nếu không có câu nào khả dụng, reset recent (vẫn giữ usage) hoặc reset usage nếu cần
+                // Nếu không có câu nào khả dụng, bỏ qua recent
                 if (available.length === 0) {
-                    // Thử bỏ qua recent, chỉ lấy câu chưa đạt 2 lần
                     for (let i = 0; i < questionBank.length; i++) {
                         if (questionUsage[i] < 2) available.push(i);
                     }
                 }
-                // Nếu vẫn không có, reset toàn bộ usage (bắt đầu lại vòng mới)
+                // Nếu vẫn không có, reset toàn bộ usage
                 if (available.length === 0) {
                     questionUsage.fill(0);
                     recentQuestions = [];
@@ -531,7 +530,7 @@
                 const randIdx = available[Math.floor(Math.random() * available.length)];
                 questionUsage[randIdx]++;
                 recentQuestions.push(randIdx);
-                if (recentQuestions.length > 4) recentQuestions.shift(); // giữ 4 câu gần nhất
+                if (recentQuestions.length > 4) recentQuestions.shift();
                 return questionBank[randIdx];
             }
 
@@ -593,7 +592,7 @@
             // Game state
             let canvas, ctx;
             let gameActive = false;
-            let cheatDetected = false; // cờ gian lận
+            let cheatDetected = false;
             let timeLeft = 300; // 5 phút
             let timerInterval = null;
             let apples = [];
@@ -664,7 +663,6 @@
             }
 
             window.addEventListener('blur', () => {
-                // Có thể là chuyển tab, mở app khác, chụp màn hình (trên mobile)
                 handleCheat();
             });
 
@@ -672,7 +670,6 @@
                 if (document.hidden) handleCheat();
             });
 
-            // Ngăn chặn context menu (chuột phải) và phím tắt chụp màn hình (cơ bản)
             window.addEventListener('contextmenu', e => e.preventDefault());
             window.addEventListener('keydown', e => {
                 if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p')) {
@@ -728,7 +725,6 @@
                 const x = Math.random() * canvas.width;
                 const y = -50;
                 const r = Math.random();
-                let type = 'normal';
                 let golden = false;
                 let bomb = false;
                 if (r < 0.1) {
@@ -746,7 +742,7 @@
                     speed = (BASE_SPEED + Math.random() * 1.5) * speedMultiplier;
                 }
 
-                apples.push({ x, y, speed, golden, bomb, radius: 35 });
+                apples.push({ x, y, speed, golden, bomb, radius: 30 }); // Giảm bán kính từ 35 xuống 30
             }
 
             function drawApples() {
@@ -804,7 +800,8 @@
                         apples.splice(i, 1);
                     }
                 }
-                if (Math.random() < 0.025) spawnApple();
+                // Giảm tỷ lệ sinh từ 0.025 xuống 0.02 để giảm số táo cùng lúc
+                if (Math.random() < 0.02) spawnApple();
             }
 
             canvasEl.addEventListener('click', (e) => {
